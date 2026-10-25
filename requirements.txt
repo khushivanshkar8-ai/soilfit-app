@@ -1,2 +1,5 @@
-streamlit
-pandas
+gradio
+requests
+Pillow
+numpy
+
