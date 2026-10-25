@@ -1,10 +1,36 @@
+import streamlit as st
+import requests
+
+# Page configuration
+st.set_page_config(
+    page_title="Soilfit - Green Mentor App",
+    page_icon="🌱",
+    layout="centered"
+)
+
+# App Header
+st.title("🌱 Soilfit: Your Friendly Green Mentor!")
+st.markdown("Welcome, young scientist! Let's check how our soil and plants are doing today! 🩵")
+
+# Sidebar for inputs
+st.sidebar.header("🌍 Environmental Setup")
+city = st.sidebar.text_input("Enter your city name:", "Jabalpur")
+plant_choice = st.sidebar.selectbox(
+    "What are you growing?",
+    [
+        "🌳 Shade Trees & Saplings",
+        "🌸 Flowering Garden Plants",
+        "🍎 Fruit Trees & Orchards"
+    ]
+)
+
+# Main Engine Function with Safe Fallbacks
 def soilfit_engine(city_name, plant_type):
     url = f"https://wttr.in/{city_name}?format=j1"
     try:
         response = requests.get(url, timeout=5)
         data = response.json()
         
-        # Safe extraction with fallback checks
         current = data.get('current_condition', [{}])[0]
         temp_c_str = current.get('temp_c', '25')
         temp_c = float(temp_c_str)
@@ -38,9 +64,20 @@ def soilfit_engine(city_name, plant_type):
         return weather_text, analysis_text
 
     except Exception as e:
-        # Fallback default values so the app never breaks!
         temp_c = 28.0
         weather_text = f"🌤️ **Live Weather in {city_name}:** {temp_c}°C (Estimated / Offline mode)"
-        analysis_text = f"💡 **Friendly Mentor Advice:**\n🌳 **General Care:** Weather API is currently busy, but standard care applies! Keep your soil adequately moist and check for proper sunlight."
+        analysis_text = "💡 **Friendly Mentor Advice:**\n🌳 **General Care:** Weather API is currently busy, but standard care applies! Keep your soil adequately moist and check for proper sunlight."
         return weather_text, analysis_text
+
+# Run Analysis Button
+if st.button("🚀 Check Soil & Plant Health"):
+    with st.spinner("Consulting the green mentor..."):
+        weather_output, advice_output = soilfit_engine(city, plant_choice)
         
+        st.success("Analysis Complete!")
+        st.markdown(weather_output)
+        st.markdown(advice_output)
+
+# Footer
+st.markdown("---")
+st.markdown("Made with 🩵 for a greener, healthier earth!")
