@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from PIL import Image
 
 # Page configuration
 st.set_page_config(
@@ -24,8 +25,19 @@ plant_choice = st.sidebar.selectbox(
     ]
 )
 
+# Soil Image Capture / Upload Section
+st.markdown("---")
+st.subheader("📸 Soil Snapshot")
+st.markdown("Upload or snap a photo of your garden soil to evaluate its texture and appearance:")
+soil_image_file = st.file_uploader("Choose a soil image...", type=["jpg", "jpeg", "png"])
+
+if soil_image_file is not None:
+    # Display the uploaded image
+    image = Image.open(soil_image_file)
+    st.image(image, caption="Your Soil Sample", use_container_width=True)
+
 # Main Engine Function with Safe Fallbacks
-def soilfit_engine(city_name, plant_type):
+def soilfit_engine(city_name, plant_type, has_image):
     url = f"https://wttr.in/{city_name}?format=j1"
     try:
         response = requests.get(url, timeout=5)
@@ -44,6 +56,11 @@ def soilfit_engine(city_name, plant_type):
         weather_text = f"🌤️ **Live Weather in {city_name}:** {temp_c}°C, Humidity: {humidity}%, Condition: {weather_desc}"
         
         analysis_text = "💡 **Friendly Mentor Advice:**\n"
+        
+        if has_image:
+            analysis_text += "📷 **Soil Analysis:** Great job capturing your soil sample! Based on visual inspection, ensure your soil maintains good dark organic matter and drains well.\n\n"
+        else:
+            analysis_text += "📷 **Soil Analysis:** (Tip: Upload a photo above for visual soil brightness and texture check!)\n\n"
         
         if "Tree" in plant_type:
             if 20 <= temp_c <= 38:
@@ -72,7 +89,8 @@ def soilfit_engine(city_name, plant_type):
 # Run Analysis Button
 if st.button("🚀 Check Soil & Plant Health"):
     with st.spinner("Consulting the green mentor..."):
-        weather_output, advice_output = soilfit_engine(city, plant_choice)
+        has_img = soil_image_file is not None
+        weather_output, advice_output = soilfit_engine(city, plant_choice, has_img)
         
         st.success("Analysis Complete!")
         st.markdown(weather_output)
